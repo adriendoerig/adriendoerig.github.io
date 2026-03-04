@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Publications – Adrien Doerig</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <div>
+        <h1>Publications</h1>
+        <p class="links">
+          <a href="index.html">Home</a>
+          <span>·</span>
+          <a href="research.html">Research</a>
+          <span>·</span>
+          <a href="https://scholar.google.com/citations?user=YA6DPIcAAAAJ" target="_blank">Google Scholar</a>
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <p class="small">This list is auto-generated from Google Scholar.</p>
+        <div id="pubs">Loading…</div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    async function loadPubs() {
+      const res = await fetch("assets/record.json", { cache: "no-store" });
+      if (!res.ok) throw new Error("Could not load record.json");
+      const pubs = await res.json();
+
+      // Sort by year (if present), then title
+      pubs.sort((a, b) => {
+        const ay = (a.date && a.date[0]) ? a.date[0] : 0;
+        const by = (b.date && b.date[0]) ? b.date[0] : 0;
+        if (by !== ay) return by - ay;
+        return (a.title || "").localeCompare(b.title || "");
+      });
+
+      const container = document.getElementById("pubs");
+
+      // Group by year
+      const groups = new Map();
+      for (const p of pubs) {
+        const year = (p.date && p.date[0]) ? p.date[0] : "—";
+        if (!groups.has(year)) groups.set(year, []);
+        groups.get(year).push(p);
+      }
+
+      // Render
+      let html = "";
+      for (const [year, items] of groups) {
+        html += `<h2>${year}</h2><ol class="pubs">`;
+        for (const p of items) {
+          const title = p.title || "Untitled";
+          const authors = (p.authors && p.authors.length) ? p.authors.join(", ") : "";
+          const venue = [p.journal, p.publisher].filter(Boolean).join(" · ");
+          const link = p.link ? ` <a href="${p.link}" target="_blank">link</a>` : "";
+          html += `<li>${authors ? authors + ". " : ""}<em>${title}</em>${venue ? ". " + venue : ""}${link}</li>`;
+        }
+        html += `</ol>`;
+      }
+
+      container.innerHTML = html || "No publications found.";
+    }
+
+    loadPubs().catch(err => {
+      document.getElementById("pubs").textContent =
+        "Could not load publications automatically. (Try the Google Scholar link above.)";
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
