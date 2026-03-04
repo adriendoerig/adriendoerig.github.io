@@ -67,8 +67,9 @@
     <footer class="footer">© Adrien Doerig</footer>
   </div>
 
-  <!-- Load BibTeX parser first -->
-  <script src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
+    <!-- BibTeX parser (try two CDNs) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
+  <script defer src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
 
   <script>
     (function () {
@@ -94,13 +95,22 @@
         return Number.isFinite(y) ? y : 0;
       }
 
+      function waitForBibtexParse(timeoutMs = 8000) {
+        const start = Date.now();
+        return new Promise((resolve, reject) => {
+          (function tick() {
+            if (window.bibtexParse && typeof window.bibtexParse.toJSON === "function") return resolve();
+            if (Date.now() - start > timeoutMs) return reject(new Error("bibtex-parse-js did not load."));
+            setTimeout(tick, 50);
+          })();
+        });
+      }
+
       async function loadBib() {
         const container = document.getElementById("pubs");
 
-        // Ensure parser loaded
-        if (!window.bibtexParse || typeof window.bibtexParse.toJSON !== "function") {
-          throw new Error("bibtex-parse-js did not load (bibtexParse is undefined).");
-        }
+        // Wait for bibtexParse to exist (because CDN scripts can be slow/blocked)
+        await waitForBibtexParse();
 
         // Use absolute path so it works from any page depth on GitHub Pages
         const bibPath = "/assets/publications.bib";
@@ -112,11 +122,11 @@
           throw new Error(`Could not load ${bibPath} (HTTP ${res.status}).`);
         }
 
-        // Common failure mode: GitHub Pages returns an HTML 404 page, which starts with "<"
+        // Common failure mode: GitHub Pages returns HTML 404 page, which starts with "<"
         if (/^\s*</.test(text)) {
           throw new Error(
             `Fetched HTML instead of BibTeX from ${bibPath}. ` +
-            `This usually means the file path is wrong or the file isn't published on GitHub Pages.`
+            `This usually means the file path is wrong or the file isn't being served.`
           );
         }
 
@@ -162,7 +172,8 @@
       document.addEventListener("DOMContentLoaded", () => {
         loadBib().catch((err) => {
           const container = document.getElementById("pubs");
-          container.textContent = `Could not load publications: ${err?.message || err}`;
+          container.textContent =
+            "Could not load publications. Check that /assets/publications.bib exists and that the BibTeX parser CDN is reachable.";
           console.error(err);
         });
       });
