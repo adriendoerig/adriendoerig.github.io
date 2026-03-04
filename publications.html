@@ -33,112 +33,141 @@
 
     <main>
       <section>
+        <h2>Selected publications</h2>
+        <ol class="pubs">
+          <li>
+            Doerig, A., Sommers, R. P., Seeliger, K., Richards, B., Ismael, J., Lindsay, G. W., ... &amp; Kietzmann, T. C. (2023).
+            <em>The neuroconnectionist research programme.</em> Nature Reviews Neuroscience, 24(7), 431–450.
+            <a href="https://www.nature.com/articles/s41583-023-00705-w" target="_blank" rel="noopener">link</a>
+          </li>
+          <li>
+            Doerig, A., Kietzmann, T. C., Allen, E., Wu, Y., Naselaris, T., Kay, K., &amp; Charest, I. (2025).
+            <em>High-level visual representations in the human brain are aligned with large language models.</em>
+            Nature Machine Intelligence, 7(8), 1220–1234.
+            <a href="https://www.nature.com/articles/s42256-025-01072-0" target="_blank" rel="noopener">link</a>
+          </li>
+          <li>
+            Lu, Z., Doerig, A., Bosch, V., Krahmer, B., Kaiser, D., Cichy, R. M., &amp; Kietzmann, T. C. (2025).
+            <em>End-to-end topographic networks as models of cortical map formation and human visual behaviour.</em>
+            Nature Human Behaviour, 9(9), 1975–1991.
+            <a href="https://www.nature.com/articles/s41562-025-02220-7" target="_blank" rel="noopener">link</a>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>All publications</h2>
         <p class="small">
           This list is generated from a BibTeX export (update by re-exporting from Google Scholar).
         </p>
-
         <div id="pubs">Loading…</div>
       </section>
     </main>
 
-    <footer class="footer">
-      © Adrien Doerig
-    </footer>
+    <footer class="footer">© Adrien Doerig</footer>
   </div>
 
   <!-- Load BibTeX parser first -->
   <script src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
 
   <script>
-    function escapeHtml(s) {
-      return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function cleanTitle(title) {
-      return String(title || "Untitled").replace(/[{}]/g, "");
-    }
-
-    function formatAuthors(auth) {
-      return String(auth || "").replace(/\s+and\s+/g, ", ");
-    }
-
-    function getYear(entry) {
-      const y = entry.entryTags && entry.entryTags.year ? parseInt(entry.entryTags.year, 10) : 0;
-      return Number.isFinite(y) ? y : 0;
-    }
-
-    async function loadBib() {
-      const container = document.getElementById("pubs");
-
-      // Distinguish “parser not loaded” from “bib not found”
-      if (typeof window.bibtexParse === "undefined" || typeof window.bibtexParse.toJSON !== "function") {
-        throw new Error("bibtex-parse-js did not load (bibtexParse is undefined).");
+    (function () {
+      function escapeHtml(s) {
+        return String(s ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
-      // Use absolute path so it works from any page depth
-      const bibPath = "/assets/publications.bib";
-      const res = await fetch(bibPath, { cache: "no-store" });
-
-      if (!res.ok) {
-        throw new Error(`Could not fetch ${bibPath} (HTTP ${res.status}).`);
+      function cleanTitle(title) {
+        return String(title || "Untitled").replace(/[{}]/g, "");
       }
 
-      const text = await res.text();
-      const entries = window.bibtexParse.toJSON(text);
-
-      // newest first
-      entries.sort((a, b) => getYear(b) - getYear(a));
-
-      // group by year (descending)
-      const groups = new Map();
-      for (const e of entries) {
-        const y = getYear(e) || "—";
-        if (!groups.has(y)) groups.set(y, []);
-        groups.get(y).push(e);
+      function formatAuthors(auth) {
+        return String(auth || "").replace(/\s+and\s+/g, ", ");
       }
 
-      const years = Array.from(groups.keys()).sort((a, b) => {
-        const aa = a === "—" ? -1 : parseInt(a, 10);
-        const bb = b === "—" ? -1 : parseInt(b, 10);
-        return bb - aa;
-      });
+      function getYear(entry) {
+        const y = entry?.entryTags?.year ? parseInt(entry.entryTags.year, 10) : 0;
+        return Number.isFinite(y) ? y : 0;
+      }
 
-      let html = "";
-      for (const year of years) {
-        const items = groups.get(year);
-        html += `<h2>${escapeHtml(year)}</h2><ol class="pubs">`;
+      async function loadBib() {
+        const container = document.getElementById("pubs");
 
-        for (const e of items) {
-          const t = e.entryTags || {};
-          const title = cleanTitle(t.title);
-          const authors = formatAuthors(t.author);
-          const venue = t.journal || t.booktitle || t.publisher || "";
-          const link = t.url
-            ? ` <a href="${escapeHtml(t.url)}" target="_blank" rel="noopener">link</a>`
-            : "";
-
-          html += `<li>${authors ? escapeHtml(authors) + ". " : ""}<em>${escapeHtml(title)}</em>${venue ? ". " + escapeHtml(venue) : ""}${link}</li>`;
+        // Ensure parser loaded
+        if (!window.bibtexParse || typeof window.bibtexParse.toJSON !== "function") {
+          throw new Error("bibtex-parse-js did not load (bibtexParse is undefined).");
         }
 
-        html += `</ol>`;
+        // Use absolute path so it works from any page depth on GitHub Pages
+        const bibPath = "/assets/publications.bib";
+
+        const res = await fetch(bibPath, { cache: "no-store" });
+        const text = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`Could not load ${bibPath} (HTTP ${res.status}).`);
+        }
+
+        // Common failure mode: GitHub Pages returns an HTML 404 page, which starts with "<"
+        if (/^\s*</.test(text)) {
+          throw new Error(
+            `Fetched HTML instead of BibTeX from ${bibPath}. ` +
+            `This usually means the file path is wrong or the file isn't published on GitHub Pages.`
+          );
+        }
+
+        const entries = window.bibtexParse.toJSON(text) || [];
+        if (!Array.isArray(entries) || entries.length === 0) {
+          container.textContent = "No publications found in publications.bib.";
+          return;
+        }
+
+        // sort newest first
+        entries.sort((a, b) => getYear(b) - getYear(a));
+
+        // group by year
+        const groups = new Map();
+        for (const e of entries) {
+          const y = getYear(e) || "—";
+          if (!groups.has(y)) groups.set(y, []);
+          groups.get(y).push(e);
+        }
+
+        let html = "";
+        for (const [year, items] of groups) {
+          html += `<h2>${escapeHtml(year)}</h2><ol class="pubs">`;
+          for (const e of items) {
+            const t = e.entryTags || {};
+            const title = escapeHtml(cleanTitle(t.title));
+            const authors = escapeHtml(formatAuthors(t.author));
+            const venueRaw = t.journal || t.booktitle || t.publisher || "";
+            const venue = escapeHtml(String(venueRaw));
+            const url = t.url ? String(t.url) : "";
+            const link = url
+              ? ` <a href="${escapeHtml(url)}" target="_blank" rel="noopener">link</a>`
+              : "";
+
+            html += `<li>${authors ? authors + ". " : ""}<em>${title}</em>${venue ? ". " + venue : ""}${link}</li>`;
+          }
+          html += `</ol>`;
+        }
+
+        container.innerHTML = html;
       }
 
-      container.innerHTML = html || "No publications found.";
-    }
-
-    loadBib().catch(err => {
-      const container = document.getElementById("pubs");
-      container.innerHTML =
-        `<p><strong>Could not load publications.</strong></p>
-         <p class="small">${escapeHtml(err.message)}</p>
-         <p class="small">Tip: try opening <code>/assets/publications.bib</code> directly to confirm it is publicly accessible.</p>`;
-      console.error(err);
-    });
+      document.addEventListener("DOMContentLoaded", () => {
+        loadBib().catch((err) => {
+          const container = document.getElementById("pubs");
+          container.textContent =
+            "Could not load publications. Make sure /assets/publications.bib exists and is being served by GitHub Pages.";
+          console.error(err);
+        });
+      });
+    })();
   </script>
 </body>
 </html>
