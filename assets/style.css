@@ -90,3 +90,28 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
   .about { flex-direction: column; gap: 18px; }
   .about-photo img { width: 180px; }
 }
+
+/* ============================
+   TOP NAVIGATION BAR
+   ============================ */
+
+.nav {
+  margin-top: 8px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--fg);
+  margin-right: 18px;
+  font-size: 0.95rem;
+}
+
+.nav a:hover {
+  text-decoration: underline;
+}
+
+/* slightly separate nav from header title */
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
