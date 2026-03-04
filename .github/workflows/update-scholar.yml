@@ -2,8 +2,7 @@ name: Update Google Scholar record
 
 on:
   schedule:
-    # runs at 00:00 UTC
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * 1"   # Mondays, 00:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -20,6 +19,11 @@ jobs:
         with:
           google-scholar-id: YA6DPIcAAAAJ
           record-file: assets/record.json
+
+      - name: Show first bytes of record.json (debug)
+        run: |
+          head -c 200 assets/record.json || true
+          echo
 
       - name: Commit and push if changed
         run: |
