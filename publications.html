@@ -4,62 +4,97 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Publications – Adrien Doerig</title>
+  <meta name="description" content="Publications of Adrien Doerig." />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
+
 <body>
   <div class="container">
     <header class="header">
-  <div class="header-text">
-    <h1>Adrien Doerig</h1>
-    <p class="subtitle">Computational Cognitive Neuroscience · NeuroAI · Philosophy and Science of Consciousness</p>
+      <div class="header-text">
+        <h1>Adrien Doerig</h1>
+        <p class="subtitle">Computational Cognitive Neuroscience · NeuroAI · Philosophy and Science of Consciousness</p>
 
-    <nav class="nav" aria-label="Primary">
-      <a href="index.html">About</a>
-      <a href="research.html">Research</a>
-      <a href="publications.html">Publications</a>
-      <a href="teaching.html">Teaching</a>
-      <a href="https://docs.google.com/document/d/1o0TytRM_Bbq6KgD5HaiintCRy56XcahuUkoDlU7zbqY/export?format=pdf" target="_blank" rel="noopener">CV</a>
-      <a href="https://scholar.google.com/citations?user=YA6DPIcAAAAJ&hl=en" target="_blank" rel="noopener">Scholar</a>
-      <a href="https://bsky.app/profile/adriendoerig.bsky.social" target="_blank" rel="noopener">Bluesky</a>
-      <a href="mailto:adrien.doerig@fu-berlin.de">Email</a>
-    </nav>
-  </div>
+        <nav class="nav" aria-label="Primary">
+          <a href="index.html">About</a>
+          <a href="research.html">Research</a>
+          <a href="publications.html">Publications</a>
+          <a href="teaching.html">Teaching</a>
+          <a href="https://docs.google.com/document/d/1o0TytRM_Bbq6KgD5HaiintCRy56XcahuUkoDlU7zbqY/export?format=pdf" target="_blank" rel="noopener">CV</a>
+          <a href="https://scholar.google.com/citations?user=YA6DPIcAAAAJ&hl=en" target="_blank" rel="noopener">Scholar</a>
+          <a href="https://bsky.app/profile/adriendoerig.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+          <a href="mailto:adrien.doerig@fu-berlin.de">Email</a>
+        </nav>
+      </div>
 
-  <!-- optional header portrait (currently disabled) -->
-  <!-- <img class="avatar" src="assets/pic.jpg" alt="Portrait of Adrien Doerig" /> -->
-</header>
+      <!-- optional header portrait (currently disabled) -->
+      <!-- <img class="avatar" src="assets/pic.jpg" alt="Portrait of Adrien Doerig" /> -->
+    </header>
 
     <main>
       <section>
         <p class="small">
           This list is generated from a BibTeX export (update by re-exporting from Google Scholar).
         </p>
+
         <div id="pubs">Loading…</div>
       </section>
     </main>
+
     <footer class="footer">
       © Adrien Doerig
     </footer>
   </div>
 
+  <!-- Load BibTeX parser first -->
   <script src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
+
   <script>
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function cleanTitle(title) {
+      return String(title || "Untitled").replace(/[{}]/g, "");
+    }
+
+    function formatAuthors(auth) {
+      return String(auth || "").replace(/\s+and\s+/g, ", ");
+    }
+
+    function getYear(entry) {
+      const y = entry.entryTags && entry.entryTags.year ? parseInt(entry.entryTags.year, 10) : 0;
+      return Number.isFinite(y) ? y : 0;
+    }
+
     async function loadBib() {
-      const res = await fetch("assets/publications.bib", { cache: "no-store" });
-      if (!res.ok) throw new Error("Could not load publications.bib");
+      const container = document.getElementById("pubs");
+
+      // Distinguish “parser not loaded” from “bib not found”
+      if (typeof window.bibtexParse === "undefined" || typeof window.bibtexParse.toJSON !== "function") {
+        throw new Error("bibtex-parse-js did not load (bibtexParse is undefined).");
+      }
+
+      // Use absolute path so it works from any page depth
+      const bibPath = "/assets/publications.bib";
+      const res = await fetch(bibPath, { cache: "no-store" });
+
+      if (!res.ok) {
+        throw new Error(`Could not fetch ${bibPath} (HTTP ${res.status}).`);
+      }
+
       const text = await res.text();
-      const entries = bibtexParse.toJSON(text);
+      const entries = window.bibtexParse.toJSON(text);
 
-      // helper: year for sorting
-      const getYear = (e) => {
-        const y = e.entryTags && e.entryTags.year ? parseInt(e.entryTags.year, 10) : 0;
-        return Number.isFinite(y) ? y : 0;
-      };
+      // newest first
+      entries.sort((a, b) => getYear(b) - getYear(a));
 
-      // sort newest first
-      entries.sort((a,b) => getYear(b) - getYear(a));
-
-      // group by year
+      // group by year (descending)
       const groups = new Map();
       for (const e of entries) {
         const y = getYear(e) || "—";
@@ -67,19 +102,29 @@
         groups.get(y).push(e);
       }
 
-      const container = document.getElementById("pubs");
-      let html = "";
+      const years = Array.from(groups.keys()).sort((a, b) => {
+        const aa = a === "—" ? -1 : parseInt(a, 10);
+        const bb = b === "—" ? -1 : parseInt(b, 10);
+        return bb - aa;
+      });
 
-      for (const [year, items] of groups) {
-        html += `<h2>${year}</h2><ol class="pubs">`;
+      let html = "";
+      for (const year of years) {
+        const items = groups.get(year);
+        html += `<h2>${escapeHtml(year)}</h2><ol class="pubs">`;
+
         for (const e of items) {
           const t = e.entryTags || {};
-          const title = t.title ? t.title.replace(/[{}]/g,"") : "Untitled";
-          const authors = (t.author || "").replace(/\s+and\s+/g, ", ");
+          const title = cleanTitle(t.title);
+          const authors = formatAuthors(t.author);
           const venue = t.journal || t.booktitle || t.publisher || "";
-          const link = t.url ? ` <a href="${t.url}" target="_blank">link</a>` : "";
-          html += `<li>${authors ? authors + ". " : ""}<em>${title}</em>${venue ? ". " + venue : ""}${link}</li>`;
+          const link = t.url
+            ? ` <a href="${escapeHtml(t.url)}" target="_blank" rel="noopener">link</a>`
+            : "";
+
+          html += `<li>${authors ? escapeHtml(authors) + ". " : ""}<em>${escapeHtml(title)}</em>${venue ? ". " + escapeHtml(venue) : ""}${link}</li>`;
         }
+
         html += `</ol>`;
       }
 
@@ -87,8 +132,11 @@
     }
 
     loadBib().catch(err => {
-      document.getElementById("pubs").textContent =
-        "Could not load publications. Make sure assets/publications.bib exists.";
+      const container = document.getElementById("pubs");
+      container.innerHTML =
+        `<p><strong>Could not load publications.</strong></p>
+         <p class="small">${escapeHtml(err.message)}</p>
+         <p class="small">Tip: try opening <code>/assets/publications.bib</code> directly to confirm it is publicly accessible.</p>`;
       console.error(err);
     });
   </script>
