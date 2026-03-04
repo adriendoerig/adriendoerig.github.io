@@ -6,7 +6,6 @@
   <title>Publications – Adrien Doerig</title>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
-
 <body>
   <div class="container">
     <header class="header">
@@ -24,45 +23,50 @@
 
     <main>
       <section>
-        <p class="small">This list is auto-generated from Google Scholar.</p>
+        <p class="small">
+          This list is generated from a BibTeX export (update by re-exporting from Google Scholar).
+        </p>
         <div id="pubs">Loading…</div>
       </section>
     </main>
   </div>
 
+  <script src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
   <script>
-    async function loadPubs() {
-      const res = await fetch("assets/record.json", { cache: "no-store" });
-      if (!res.ok) throw new Error("Could not load record.json");
-      const pubs = await res.json();
+    async function loadBib() {
+      const res = await fetch("assets/publications.bib", { cache: "no-store" });
+      if (!res.ok) throw new Error("Could not load publications.bib");
+      const text = await res.text();
+      const entries = bibtexParse.toJSON(text);
 
-      // Sort by year (if present), then title
-      pubs.sort((a, b) => {
-        const ay = (a.date && a.date[0]) ? a.date[0] : 0;
-        const by = (b.date && b.date[0]) ? b.date[0] : 0;
-        if (by !== ay) return by - ay;
-        return (a.title || "").localeCompare(b.title || "");
-      });
+      // helper: year for sorting
+      const getYear = (e) => {
+        const y = e.entryTags && e.entryTags.year ? parseInt(e.entryTags.year, 10) : 0;
+        return Number.isFinite(y) ? y : 0;
+      };
 
-      const container = document.getElementById("pubs");
+      // sort newest first
+      entries.sort((a,b) => getYear(b) - getYear(a));
 
-      // Group by year
+      // group by year
       const groups = new Map();
-      for (const p of pubs) {
-        const year = (p.date && p.date[0]) ? p.date[0] : "—";
-        if (!groups.has(year)) groups.set(year, []);
-        groups.get(year).push(p);
+      for (const e of entries) {
+        const y = getYear(e) || "—";
+        if (!groups.has(y)) groups.set(y, []);
+        groups.get(y).push(e);
       }
 
-      // Render
+      const container = document.getElementById("pubs");
       let html = "";
+
       for (const [year, items] of groups) {
         html += `<h2>${year}</h2><ol class="pubs">`;
-        for (const p of items) {
-          const title = p.title || "Untitled";
-          const authors = (p.authors && p.authors.length) ? p.authors.join(", ") : "";
-          const venue = [p.journal, p.publisher].filter(Boolean).join(" · ");
-          const link = p.link ? ` <a href="${p.link}" target="_blank">link</a>` : "";
+        for (const e of items) {
+          const t = e.entryTags || {};
+          const title = t.title ? t.title.replace(/[{}]/g,"") : "Untitled";
+          const authors = (t.author || "").replace(/\s+and\s+/g, ", ");
+          const venue = t.journal || t.booktitle || t.publisher || "";
+          const link = t.url ? ` <a href="${t.url}" target="_blank">link</a>` : "";
           html += `<li>${authors ? authors + ". " : ""}<em>${title}</em>${venue ? ". " + venue : ""}${link}</li>`;
         }
         html += `</ol>`;
@@ -71,9 +75,9 @@
       container.innerHTML = html || "No publications found.";
     }
 
-    loadPubs().catch(err => {
+    loadBib().catch(err => {
       document.getElementById("pubs").textContent =
-        "Could not load publications automatically. (Try the Google Scholar link above.)";
+        "Could not load publications. Make sure assets/publications.bib exists.";
       console.error(err);
     });
   </script>
