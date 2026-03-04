@@ -38,19 +38,19 @@
           <li>
             <strong>Doerig</strong>, A.<sup>†</sup>, Sommers, R. P.<sup>†</sup>, Seeliger, K., Richards, B., Ismael, J., Lindsay, G. W., ... &amp; Kietzmann, T. C. (2023).
             <strong>The neuroconnectionist research programme.</strong>
-            <em>Nature Reviews Neuroscience</em>
+            <em>Nature Reviews Neuroscience.</em>
             <a href="https://www.nature.com/articles/s41583-023-00705-w" target="_blank" rel="noopener">Link</a>
           </li>
           <li>
             <strong>Doerig</strong>, A.<sup>†</sup>, Kietzmann, T. C.<sup>†</sup>, Allen, E., Wu, Y., Naselaris, T., Kay, K., &amp; Charest, I. (2025).
             <strong>High-level visual representations in the human brain are aligned with large language models.</strong>
-            <em>Nature Machine Intelligence</em>
+            <em>Nature Machine Intelligence.</em>
             <a href="https://www.nature.com/articles/s42256-025-01072-0" target="_blank" rel="noopener">Link</a>
           </li>
           <li>
             Lu, Z.<sup>†</sup>, <strong>Doerig</strong>, A.<sup>†</sup>, Bosch, V.<sup>†</sup>, Krahmer, B., Kaiser, D., Cichy, R. M., &amp; Kietzmann, T. C. (2025).
             <strong>End-to-end topographic networks as models of cortical map formation and human visual behaviour.</strong>
-            <em>Nature Human Behaviour</em>
+            <em>Nature Human Behaviour.</em>
             <a href="https://www.nature.com/articles/s41562-025-02220-7" target="_blank" rel="noopener">Link</a>
           </li>
           <p class="small">
@@ -205,6 +205,7 @@ byYear[year].push(e);
 const years = Object.keys(byYear).sort((a,b)=>b-a);
 
 const container = document.getElementById("pubs");
+container.innerHTML = "";
 
 years.forEach(year => {
 
