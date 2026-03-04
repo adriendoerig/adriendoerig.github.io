@@ -68,13 +68,6 @@
     <footer class="footer">© Adrien Doerig</footer>
   </div>
 
-    <!-- BibTeX parser (try two CDNs) -->
-  <!-- <script defer src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script> -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script> -->
-  <!-- <script defer src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script> -->
-  <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
-  
-  <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
 
@@ -86,7 +79,33 @@ fetch('assets/publications.bib')
 
 const entries = bibtexParse.toJSON(text);
 
+// convert common LaTeX accents
+function decodeLatex(str){
+
+if(!str) return "";
+
+return str
+.replace(/{\\"o}/g,"ö")
+.replace(/{\\"a}/g,"ä")
+.replace(/{\\"u}/g,"ü")
+.replace(/{\\"O}/g,"Ö")
+.replace(/{\\"A}/g,"Ä")
+.replace(/{\\"U}/g,"Ü")
+.replace(/{\\'a}/g,"á")
+.replace(/{\\'e}/g,"é")
+.replace(/{\\'i}/g,"í")
+.replace(/{\\'o}/g,"ó")
+.replace(/{\\'u}/g,"ú")
+.replace(/{\\'n}/g,"ń")
+.replace(/{\\'c}/g,"ć")
+.replace(/[{}]/g,"");
+
+}
+
+// format authors
 function formatAuthors(authorStr){
+
+authorStr = decodeLatex(authorStr);
 
 const authors = authorStr.split(" and ");
 
@@ -94,36 +113,35 @@ return authors.map(a => {
 
 a = a.trim();
 
+let last, first;
+
 if(a.includes(",")){
 
 const parts = a.split(",");
-const last = parts[0].trim();
-const first = parts[1].trim();
-const initial = first[0] + ".";
-let formatted = `${last}, ${initial}`;
-
-if(last === "Doerig") formatted = `<strong>${formatted}</strong>`;
-
-return formatted;
+last = parts[0].trim();
+first = parts[1].trim();
 
 }else{
 
 const parts = a.split(" ");
-const last = parts[parts.length-1];
-const first = parts[0];
-const initial = first[0] + ".";
-let formatted = `${last}, ${initial}`;
-
-if(last === "Doerig") formatted = `<strong>${formatted}</strong>`;
-
-return formatted;
+last = parts[parts.length-1];
+first = parts[0];
 
 }
+
+const initial = first[0] + ".";
+
+if(last === "Doerig"){
+return `<strong>Doerig</strong>, ${initial}`;
+}
+
+return `${last}, ${initial}`;
 
 }).join(", ");
 
 }
 
+// detect preprints
 function isPreprint(e){
 
 const venue = (
@@ -139,6 +157,7 @@ venue.includes("medrxiv");
 
 }
 
+// group by year
 const byYear = {};
 
 entries.forEach(e => {
@@ -164,6 +183,7 @@ container.appendChild(h);
 const ol = document.createElement("ol");
 ol.className = "pubs";
 
+// move preprints to bottom
 byYear[year].sort((a,b)=>{
 
 const aPre = isPreprint(a);
@@ -182,9 +202,9 @@ const t = e.entryTags;
 
 const authors = formatAuthors(t.author || "");
 
-const title = (t.title || "").replace(/[{}]/g,"");
+const title = decodeLatex(t.title || "");
 
-const venue = t.journal || t.booktitle || "";
+const venue = decodeLatex(t.journal || t.booktitle || "");
 
 let links = "";
 
