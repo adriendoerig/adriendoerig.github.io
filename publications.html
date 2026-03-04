@@ -68,10 +68,61 @@
   </div>
 
     <!-- BibTeX parser (try two CDNs) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
-  <script defer src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
+  <!-- <script defer src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script>
+  <!-- <script defer src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script> -->
 
   <script>
+  fetch('/assets/publications.bib')
+    .then(response => response.text())
+    .then(text => {
+  
+      const entries = bibtexParse.toJSON(text);
+  
+      // group by year
+      const pubsByYear = {};
+  
+      entries.forEach(entry => {
+          const year = entry.entryTags.year || "Unknown";
+  
+          if (!pubsByYear[year]) pubsByYear[year] = [];
+          pubsByYear[year].push(entry);
+      });
+  
+      // sort years descending
+      const years = Object.keys(pubsByYear).sort((a,b)=>b-a);
+  
+      const container = document.getElementById("publications");
+  
+      years.forEach(year => {
+  
+          const yearHeader = document.createElement("h3");
+          yearHeader.textContent = year;
+          container.appendChild(yearHeader);
+  
+          const ul = document.createElement("ul");
+  
+          pubsByYear[year].forEach(entry => {
+  
+              const li = document.createElement("li");
+  
+              const author = entry.entryTags.author || "";
+              const title = entry.entryTags.title || "";
+              const journal = entry.entryTags.journal || entry.entryTags.booktitle || "";
+  
+              li.innerHTML =
+                `${author}. <b>${title}</b>. <i>${journal}</i>.`;
+  
+              ul.appendChild(li);
+          });
+  
+          container.appendChild(ul);
+      });
+  
+    });
+  </script>
+  
+  <!-- <script>
     (function () {
       function escapeHtml(s) {
         return String(s ?? "")
@@ -178,6 +229,6 @@
         });
       });
     })();
-  </script>
+  </script> -->
 </body>
 </html>
