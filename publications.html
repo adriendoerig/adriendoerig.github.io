@@ -113,7 +113,7 @@
         await waitForBibtexParse();
 
         // Use absolute path so it works from any page depth on GitHub Pages
-        const bibPath = "/assets/publications.bib";
+        const bibPath = "assets/publications.bib";
 
         const res = await fetch(bibPath, { cache: "no-store" });
         const text = await res.text();
