@@ -162,8 +162,7 @@
       document.addEventListener("DOMContentLoaded", () => {
         loadBib().catch((err) => {
           const container = document.getElementById("pubs");
-          container.textContent =
-            "Could not load publications. Make sure /assets/publications.bib exists and is being served by GitHub Pages.";
+          container.textContent = `Could not load publications: ${err?.message || err}`;
           console.error(err);
         });
       });
