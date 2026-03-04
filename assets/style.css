@@ -110,7 +110,6 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
 
 .nav a {
   text-decoration: none;
-  color: var(--fg);
   margin-right: 18px;
   font-size: 0.95rem;
 }
