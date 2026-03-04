@@ -10,7 +10,7 @@
 body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  color: var(--fg);
+  color: #2a2a2a;
   background: #fff;
   line-height: 1.6;
 }
@@ -132,6 +132,7 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
 a {
   color: #6FAED9;
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 a:visited {
