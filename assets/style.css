@@ -70,25 +70,34 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
 .about {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 40px;
+  gap: 32px;
 }
 
-.about-text { flex: 1; }
+.about-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.about-photo {
+  flex: 0 0 180px;   /* fixed width column for photo */
+}
 
 .about-photo img {
-  width: 240px;          /* make bigger/smaller here */
-  max-width: 100%;
+  width: 180px;      /* reasonable academic-site size */
   height: auto;
-  border-radius: 6px;    /* set to 999px if you want it circular */
-  object-fit: cover;
+  border-radius: 6px;
   border: 1px solid var(--line);
 }
 
-/* Mobile: stack text above photo */
+/* mobile layout */
 @media (max-width: 700px) {
-  .about { flex-direction: column; gap: 18px; }
-  .about-photo img { width: 180px; }
+  .about {
+    flex-direction: column;
+  }
+
+  .about-photo img {
+    width: 160px;
+  }
 }
 
 /* ============================
