@@ -124,3 +124,21 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
   display: flex;
   flex-direction: column;
 }
+
+/* ============================
+   LINKS
+   ============================ */
+
+a {
+  color: #6FAED9;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #B8A2CC;
+}
+
+a:hover {
+  color: #4F95C6;
+  text-decoration: underline;
+}
