@@ -83,7 +83,7 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
 }
 
 .about-photo img {
-  width: 180px;      /* reasonable academic-site size */
+  width: 220px;      /* reasonable academic-site size */
   height: auto;
   border-radius: 6px;
   border: 1px solid var(--line);
@@ -96,7 +96,7 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
   }
 
   .about-photo img {
-    width: 160px;
+    width: 200px;
   }
 }
 
