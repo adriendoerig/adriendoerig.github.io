@@ -76,105 +76,146 @@
   
   <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
+
 <script>
+
 fetch('assets/publications.bib')
-  .then(r => r.text())
-  .then(text => {
+.then(r => r.text())
+.then(text => {
 
-    const entries = bibtexParse.toJSON(text);
+const entries = bibtexParse.toJSON(text);
 
-    // format authors
-    function formatAuthors(authorStr) {
+function formatAuthors(authorStr){
 
-      const authors = authorStr.split(" and ");
+const authors = authorStr.split(" and ");
 
-      return authors.map(a => {
+return authors.map(a => {
 
-        a = a.trim();
+a = a.trim();
 
-        // detect formats
-        if (a.includes(",")) {
-          const parts = a.split(",");
-          const last = parts[0].trim();
-          const first = parts[1].trim();
-          const initial = first[0] + ".";
-          const formatted = `${last}, ${initial}`;
+if(a.includes(",")){
 
-          if (last === "Doerig") return `<strong>${formatted}</strong>`;
-          return formatted;
+const parts = a.split(",");
+const last = parts[0].trim();
+const first = parts[1].trim();
+const initial = first[0] + ".";
+let formatted = `${last}, ${initial}`;
 
-        } else {
+if(last === "Doerig") formatted = `<strong>${formatted}</strong>`;
 
-          const parts = a.split(" ");
-          const last = parts[parts.length-1];
-          const first = parts[0];
-          const initial = first[0] + ".";
-          const formatted = `${last}, ${initial}`;
+return formatted;
 
-          if (last === "Doerig") return `<strong>${formatted}</strong>`;
-          return formatted;
-        }
+}else{
 
-      }).join(", ");
-    }
+const parts = a.split(" ");
+const last = parts[parts.length-1];
+const first = parts[0];
+const initial = first[0] + ".";
+let formatted = `${last}, ${initial}`;
 
-    // group by year
-    const byYear = {};
+if(last === "Doerig") formatted = `<strong>${formatted}</strong>`;
 
-    entries.forEach(e => {
+return formatted;
 
-      const year = e.entryTags.year || "Unknown";
+}
 
-      if (!byYear[year]) byYear[year] = [];
-      byYear[year].push(e);
+}).join(", ");
 
-    });
+}
 
-    const years = Object.keys(byYear).sort((a,b)=>b-a);
+function isPreprint(e){
 
-    const container = document.getElementById("pubs");
+const venue = (
+e.entryTags.journal ||
+e.entryTags.booktitle ||
+e.entryTags.eprint ||
+""
+).toLowerCase();
 
-    years.forEach(year => {
+return venue.includes("arxiv") ||
+venue.includes("biorxiv") ||
+venue.includes("medrxiv");
 
-      const h = document.createElement("h3");
-      h.textContent = year;
-      container.appendChild(h);
+}
 
-      const ol = document.createElement("ol");
-      ol.className = "pubs";
+const byYear = {};
 
-      byYear[year].forEach(e => {
+entries.forEach(e => {
 
-        const t = e.entryTags;
+const year = e.entryTags.year || "Unknown";
 
-        const authors = formatAuthors(t.author || "");
+if(!byYear[year]) byYear[year] = [];
 
-        const title = (t.title || "").replace(/[{}]/g,"");
+byYear[year].push(e);
 
-        const venue = t.journal || t.booktitle || "";
+});
 
-        const doi = t.doi
-          ? ` <a href="https://doi.org/${t.doi}" target="_blank">doi</a>`
-          : "";
+const years = Object.keys(byYear).sort((a,b)=>b-a);
 
-        const url = t.url
-          ? ` <a href="${t.url}" target="_blank">link</a>`
-          : "";
+const container = document.getElementById("pubs");
 
-        const li = document.createElement("li");
+years.forEach(year => {
 
-        li.innerHTML =
-          `${authors}. <em>${title}</em>. ${venue}.${doi}${url}`;
+const h = document.createElement("h3");
+h.textContent = year;
+container.appendChild(h);
 
-        ol.appendChild(li);
+const ol = document.createElement("ol");
+ol.className = "pubs";
 
-      });
+byYear[year].sort((a,b)=>{
 
-      container.appendChild(ol);
+const aPre = isPreprint(a);
+const bPre = isPreprint(b);
 
-    });
+if(aPre && !bPre) return 1;
+if(!aPre && bPre) return -1;
 
-  });
+return 0;
+
+});
+
+byYear[year].forEach(e => {
+
+const t = e.entryTags;
+
+const authors = formatAuthors(t.author || "");
+
+const title = (t.title || "").replace(/[{}]/g,"");
+
+const venue = t.journal || t.booktitle || "";
+
+let links = "";
+
+if(t.doi){
+links += ` <a href="https://doi.org/${t.doi}" target="_blank">doi</a>`;
+}
+
+if(t.url){
+links += ` <a href="${t.url}" target="_blank">link</a>`;
+}
+
+if(t.eprint && t.eprint.includes("arXiv")){
+const id = t.eprint.replace("arXiv:","");
+links += ` <a href="https://arxiv.org/abs/${id}" target="_blank">arXiv</a>`;
+}
+
+const li = document.createElement("li");
+
+li.innerHTML =
+`${authors}. <strong>${title}</strong>. <em>${venue}</em>.${links}`;
+
+ol.appendChild(li);
+
+});
+
+container.appendChild(ol);
+
+});
+
+});
+
 </script>
 </body>
 </html>
