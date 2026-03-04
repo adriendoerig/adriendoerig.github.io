@@ -68,7 +68,6 @@
     <footer class="footer">© Adrien Doerig</footer>
   </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
 
 <script>
@@ -79,12 +78,13 @@ fetch('assets/publications.bib')
 
 const entries = bibtexParse.toJSON(text);
 
-// convert common LaTeX accents
+// decode common BibTeX accents
 function decodeLatex(str){
 
 if(!str) return "";
 
 return str
+.replace(/\\ss/g,"ss")
 .replace(/{\\"o}/g,"ö")
 .replace(/{\\"a}/g,"ä")
 .replace(/{\\"u}/g,"ü")
@@ -97,7 +97,6 @@ return str
 .replace(/{\\'o}/g,"ó")
 .replace(/{\\'u}/g,"ú")
 .replace(/{\\'n}/g,"ń")
-.replace(/{\\'c}/g,"ć")
 .replace(/[{}]/g,"");
 
 }
@@ -157,7 +156,38 @@ venue.includes("medrxiv");
 
 }
 
-// group by year
+// journal ranking
+function journalRank(e){
+
+if(isPreprint(e)) return 100;
+
+const venue = decodeLatex(
+e.entryTags.journal || e.entryTags.booktitle || ""
+).toLowerCase();
+
+if(venue === "nature") return 1;
+if(venue === "science") return 2;
+
+if(venue.includes("nature")) return 3;
+if(venue.includes("science")) return 4;
+
+if(
+venue.includes("cell") ||
+venue.includes("neuron") ||
+venue.includes("current biology") ||
+venue.includes("cell reports") ||
+venue.includes("trends in cognitive sciences")
+) return 5;
+
+if(venue.includes("behavioral and brain sciences")) return 6;
+
+if(venue.includes("plos")) return 7;
+
+return 50;
+
+}
+
+// group papers by year
 const byYear = {};
 
 entries.forEach(e => {
@@ -183,14 +213,13 @@ container.appendChild(h);
 const ol = document.createElement("ol");
 ol.className = "pubs";
 
-// move preprints to bottom
+// sorting
 byYear[year].sort((a,b)=>{
 
-const aPre = isPreprint(a);
-const bPre = isPreprint(b);
+const rA = journalRank(a);
+const rB = journalRank(b);
 
-if(aPre && !bPre) return 1;
-if(!aPre && bPre) return -1;
+if(rA !== rB) return rA - rB;
 
 return 0;
 
@@ -237,5 +266,6 @@ container.appendChild(ol);
 });
 
 </script>
+  
 </body>
 </html>
