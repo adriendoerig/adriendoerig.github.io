@@ -36,20 +36,21 @@
         <h2>Selected publications</h2>
         <ol class="pubs">
           <li>
-            Doerig, A.<sup>†</sup>, Sommers, R. P.<sup>†</sup>, Seeliger, K., Richards, B., Ismael, J., Lindsay, G. W., ... &amp; Kietzmann, T. C. (2023).
-            <em>The neuroconnectionist research programme.</em> Nature Reviews Neuroscience, 24(7), 431–450.
+            <strong>Doerig</strong>, A.<sup>†</sup>, Sommers, R. P.<sup>†</sup>, Seeliger, K., Richards, B., Ismael, J., Lindsay, G. W., ... &amp; Kietzmann, T. C. (2023).
+            <strong>The neuroconnectionist research programme.</strong>
+            <em>Nature Reviews Neuroscience</em>
             <a href="https://www.nature.com/articles/s41583-023-00705-w" target="_blank" rel="noopener">Link</a>
           </li>
           <li>
-            Doerig, A.<sup>†</sup>, Kietzmann, T. C.<sup>†</sup>, Allen, E., Wu, Y., Naselaris, T., Kay, K., &amp; Charest, I. (2025).
-            <em>High-level visual representations in the human brain are aligned with large language models.</em>
-            Nature Machine Intelligence, 7(8), 1220–1234.
+            <strong>Doerig</strong>, A.<sup>†</sup>, Kietzmann, T. C.<sup>†</sup>, Allen, E., Wu, Y., Naselaris, T., Kay, K., &amp; Charest, I. (2025).
+            <strong>High-level visual representations in the human brain are aligned with large language models.</strong>
+            <em>Nature Machine Intelligence</em>
             <a href="https://www.nature.com/articles/s42256-025-01072-0" target="_blank" rel="noopener">Link</a>
           </li>
           <li>
-            Lu, Z.<sup>†</sup>, Doerig, A.<sup>†</sup>, Bosch, V.<sup>†</sup>, Krahmer, B., Kaiser, D., Cichy, R. M., &amp; Kietzmann, T. C. (2025).
-            <em>End-to-end topographic networks as models of cortical map formation and human visual behaviour.</em>
-            Nature Human Behaviour, 9(9), 1975–1991.
+            Lu, Z.<sup>†</sup>, <strong>Doerig</strong>, A.<sup>†</sup>, Bosch, V.<sup>†</sup>, Krahmer, B., Kaiser, D., Cichy, R. M., &amp; Kietzmann, T. C. (2025).
+            <strong>End-to-end topographic networks as models of cortical map formation and human visual behaviour.</strong>
+            <em>Nature Human Behaviour</em>
             <a href="https://www.nature.com/articles/s41562-025-02220-7" target="_blank" rel="noopener">Link</a>
           </li>
           <p class="small">
@@ -73,163 +74,107 @@
   <!-- <script defer src="https://unpkg.com/bibtex-parse-js@1.0.0/bibtexParse.min.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
   
-  <script>
-  fetch('assets/publications.bib')
-    .then(response => response.text())
-    .then(text => {
-  
-      const entries = bibtexParse.toJSON(text);
-  
-      // group by year
-      const pubsByYear = {};
-  
-      entries.forEach(entry => {
-          const year = entry.entryTags.year || "Unknown";
-  
-          if (!pubsByYear[year]) pubsByYear[year] = [];
-          pubsByYear[year].push(entry);
-      });
-  
-      // sort years descending
-      const years = Object.keys(pubsByYear).sort((a,b)=>b-a);
-  
-      const container = document.getElementById("pubs");
-  
-      years.forEach(year => {
-  
-          const yearHeader = document.createElement("h3");
-          yearHeader.textContent = year;
-          container.appendChild(yearHeader);
-  
-          const ul = document.createElement("ul");
-  
-          pubsByYear[year].forEach(entry => {
-  
-              const li = document.createElement("li");
-  
-              const author = entry.entryTags.author || "";
-              const title = entry.entryTags.title || "";
-              const journal = entry.entryTags.journal || entry.entryTags.booktitle || "";
-  
-              li.innerHTML =
-                `${author}. <b>${title}</b>. <i>${journal}</i>.`;
-  
-              ul.appendChild(li);
-          });
-  
-          container.appendChild(ul);
-      });
-  
+  <script src="https://cdn.jsdelivr.net/npm/bibtex-parse-js@0.0.24/bibtexParse.min.js"></script>
+
+<script>
+fetch('assets/publications.bib')
+  .then(r => r.text())
+  .then(text => {
+
+    const entries = bibtexParse.toJSON(text);
+
+    // format authors
+    function formatAuthors(authorStr) {
+
+      const authors = authorStr.split(" and ");
+
+      return authors.map(a => {
+
+        a = a.trim();
+
+        // detect formats
+        if (a.includes(",")) {
+          const parts = a.split(",");
+          const last = parts[0].trim();
+          const first = parts[1].trim();
+          const initial = first[0] + ".";
+          const formatted = `${last}, ${initial}`;
+
+          if (last === "Doerig") return `<strong>${formatted}</strong>`;
+          return formatted;
+
+        } else {
+
+          const parts = a.split(" ");
+          const last = parts[parts.length-1];
+          const first = parts[0];
+          const initial = first[0] + ".";
+          const formatted = `${last}, ${initial}`;
+
+          if (last === "Doerig") return `<strong>${formatted}</strong>`;
+          return formatted;
+        }
+
+      }).join(", ");
+    }
+
+    // group by year
+    const byYear = {};
+
+    entries.forEach(e => {
+
+      const year = e.entryTags.year || "Unknown";
+
+      if (!byYear[year]) byYear[year] = [];
+      byYear[year].push(e);
+
     });
-  </script>
-  
-  <!-- <script>
-    (function () {
-      function escapeHtml(s) {
-        return String(s ?? "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
 
-      function cleanTitle(title) {
-        return String(title || "Untitled").replace(/[{}]/g, "");
-      }
+    const years = Object.keys(byYear).sort((a,b)=>b-a);
 
-      function formatAuthors(auth) {
-        return String(auth || "").replace(/\s+and\s+/g, ", ");
-      }
+    const container = document.getElementById("pubs");
 
-      function getYear(entry) {
-        const y = entry?.entryTags?.year ? parseInt(entry.entryTags.year, 10) : 0;
-        return Number.isFinite(y) ? y : 0;
-      }
+    years.forEach(year => {
 
-      function waitForBibtexParse(timeoutMs = 8000) {
-        const start = Date.now();
-        return new Promise((resolve, reject) => {
-          (function tick() {
-            if (window.bibtexParse && typeof window.bibtexParse.toJSON === "function") return resolve();
-            if (Date.now() - start > timeoutMs) return reject(new Error("bibtex-parse-js did not load."));
-            setTimeout(tick, 50);
-          })();
-        });
-      }
+      const h = document.createElement("h3");
+      h.textContent = year;
+      container.appendChild(h);
 
-      async function loadBib() {
-        const container = document.getElementById("pubs");
+      const ol = document.createElement("ol");
+      ol.className = "pubs";
 
-        // Wait for bibtexParse to exist (because CDN scripts can be slow/blocked)
-        await waitForBibtexParse();
+      byYear[year].forEach(e => {
 
-        // Use absolute path so it works from any page depth on GitHub Pages
-        const bibPath = "assets/publications.bib";
+        const t = e.entryTags;
 
-        const res = await fetch(bibPath, { cache: "no-store" });
-        const text = await res.text();
+        const authors = formatAuthors(t.author || "");
 
-        if (!res.ok) {
-          throw new Error(`Could not load ${bibPath} (HTTP ${res.status}).`);
-        }
+        const title = (t.title || "").replace(/[{}]/g,"");
 
-        // Common failure mode: GitHub Pages returns HTML 404 page, which starts with "<"
-        if (/^\s*</.test(text)) {
-          throw new Error(
-            `Fetched HTML instead of BibTeX from ${bibPath}. ` +
-            `This usually means the file path is wrong or the file isn't being served.`
-          );
-        }
+        const venue = t.journal || t.booktitle || "";
 
-        const entries = window.bibtexParse.toJSON(text) || [];
-        if (!Array.isArray(entries) || entries.length === 0) {
-          container.textContent = "No publications found in publications.bib.";
-          return;
-        }
+        const doi = t.doi
+          ? ` <a href="https://doi.org/${t.doi}" target="_blank">doi</a>`
+          : "";
 
-        // sort newest first
-        entries.sort((a, b) => getYear(b) - getYear(a));
+        const url = t.url
+          ? ` <a href="${t.url}" target="_blank">link</a>`
+          : "";
 
-        // group by year
-        const groups = new Map();
-        for (const e of entries) {
-          const y = getYear(e) || "—";
-          if (!groups.has(y)) groups.set(y, []);
-          groups.get(y).push(e);
-        }
+        const li = document.createElement("li");
 
-        let html = "";
-        for (const [year, items] of groups) {
-          html += `<h2>${escapeHtml(year)}</h2><ol class="pubs">`;
-          for (const e of items) {
-            const t = e.entryTags || {};
-            const title = escapeHtml(cleanTitle(t.title));
-            const authors = escapeHtml(formatAuthors(t.author));
-            const venueRaw = t.journal || t.booktitle || t.publisher || "";
-            const venue = escapeHtml(String(venueRaw));
-            const url = t.url ? String(t.url) : "";
-            const link = url
-              ? ` <a href="${escapeHtml(url)}" target="_blank" rel="noopener">link</a>`
-              : "";
+        li.innerHTML =
+          `${authors}. <em>${title}</em>. ${venue}.${doi}${url}`;
 
-            html += `<li>${authors ? authors + ". " : ""}<em>${title}</em>${venue ? ". " + venue : ""}${link}</li>`;
-          }
-          html += `</ol>`;
-        }
+        ol.appendChild(li);
 
-        container.innerHTML = html;
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        loadBib().catch((err) => {
-          const container = document.getElementById("pubs");
-          container.textContent =
-            "Could not load publications. Check that /assets/publications.bib exists and that the BibTeX parser CDN is reachable.";
-          console.error(err);
-        });
       });
-    })();
-  </script> -->
+
+      container.appendChild(ol);
+
+    });
+
+  });
+</script>
 </body>
 </html>
