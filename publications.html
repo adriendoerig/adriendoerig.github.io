@@ -69,10 +69,9 @@
       <section>
         <h2>Books</h2>
         <div id="books">
-          <h3>2026</h3>
           <ol class="pubs">
             <li>
-              Herzog, M. H., Schurger, A., <strong>Doerig</strong>, A.
+              Herzog, M. H., Schurger, A., <strong>Doerig</strong>, A. (2026).
               <strong>Scientific theories of consciousness</strong>.
               <em>Cambridge University Press</em>.
             </li>
@@ -231,13 +230,21 @@ const years = Object.keys(byYear).sort((a,b)=>b-a);
 const container = document.getElementById(containerId);
 container.innerHTML = "";
 
+const booksList = containerId === "books" ? document.createElement("ol") : null;
+if(booksList){
+booksList.className = "pubs";
+container.appendChild(booksList);
+}
+
 years.forEach(year => {
 
+if(!booksList){
 const h = document.createElement("h3");
 h.textContent = year;
 container.appendChild(h);
+}
 
-const ol = document.createElement("ol");
+const ol = booksList || document.createElement("ol");
 ol.className = "pubs";
 
 // sorting
@@ -280,13 +287,13 @@ links += ` <a href="https://arxiv.org/abs/${id}" target="_blank">arXiv</a>`;
 const li = document.createElement("li");
 
 li.innerHTML =
-`${authors}. <strong>${title}</strong>. <em>${venue}</em>.${links}`;
+`${authors}${booksList ? ` (${year}).` : "."} <strong>${title}</strong>. <em>${venue}</em>.${links}`;
 
 ol.appendChild(li);
 
 });
 
-container.appendChild(ol);
+if(!booksList) container.appendChild(ol);
 
 });
 
